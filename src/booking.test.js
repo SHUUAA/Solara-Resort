@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createInquiryEmail } from './booking.js'
+import { calendarDays, createInquiryEmail, nextDate } from './booking.js'
 
 test('booking email includes stay details without inventing a recipient', () => {
   const url = createInquiryEmail({
@@ -15,4 +15,11 @@ test('booking email includes stay details without inventing a recipient', () => 
   assert.match(url, /^mailto:\?subject=/)
   assert.match(decodeURIComponent(url), /Arrival: 2027-01-10/)
   assert.match(decodeURIComponent(url), /Ocean view, please/)
+})
+
+test('calendar handles leap days and departure dates across months', () => {
+  const days = calendarDays(2028, 1)
+  assert.equal(days.filter(Boolean).length, 29)
+  assert.equal(days.at(-1), '2028-02-29')
+  assert.equal(nextDate('2028-02-29'), '2028-03-01')
 })

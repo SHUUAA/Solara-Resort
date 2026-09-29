@@ -10,19 +10,20 @@ Solara is a fictional boutique tropical resort. The site sells the feeling of un
 - Type: Playfair Display for editorial headings and italics; DM Sans for navigation, body copy, and controls. Georgia and system sans are fallbacks.
 - Layout: wide full-bleed hero images, narrow text measures, asymmetric editorial image pairings, and restrained hairline rules. Content width is about 1200px with 24px mobile gutters.
 - Components: wordmark with a simple sun symbol, uppercase letter-spaced labels, underlined text links, solid forest buttons, softly framed photographs, and a calm footer.
-- Imagery: four original photorealistic images in `public/images/`: coastal overview, suite, infinity pool, and dining terrace. Their shared materials are limestone, warm timber, linen, palms, and turquoise water. Crop them differently across pages without implying additional real facilities.
+- Imagery: eight original photorealistic images in `public/images/`: coastal overview, suite, infinity pool, dining terrace, private villa, beach, spa pavilion, and breakfast terrace. Their shared materials are limestone, warm timber, linen, palms, and turquoise water.
 
 ## Pages and content
 
-1. **Home:** aspirational hero, brand introduction, stay preview, experience preview, and booking invitation.
+1. **Home:** aspirational hero, brand introduction, four-scene discovery carousel, stay preview, experience preview, and booking invitation.
 2. **Accommodations:** suite and villa concepts, highlights, and inquiry calls to action. No invented rates or availability.
 3. **Experiences:** pool, sea, dining, and quiet rituals presented as concepts.
 4. **About:** Solara's fictional story and hospitality principles.
-5. **Contact:** reservation inquiry form with arrival, departure, guests, contact details, and a message.
+5. **Contact:** reservation inquiry form with a custom calendar for arrival and departure, a custom guest dropdown, contact details, and a message.
 
 ## Motion and interaction
 
 - GSAP reveals key text and sections with short vertical travel and fades. Images receive a restrained entrance reveal.
+- The homepage discovery carousel has category buttons, previous/next controls, and a slide count. Visitors control it; it does not advance automatically. Its frame stays the same size across slides, images crop with `object-fit: cover`, and transitions fade without zooming.
 - Hover details use CSS. No ambient loops or 3D effects.
 - Respect `prefers-reduced-motion`: all content stays visible and usable with motion removed.
 - Navigation is keyboard accessible and the mobile menu is operable by button and closes on route changes.
