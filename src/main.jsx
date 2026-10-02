@@ -40,7 +40,11 @@ function TextLink({ to, children, light = false }) {
 }
 
 function SunMark() {
-  return <svg className="sun-mark" viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="8" stroke="currentColor" strokeWidth="1.35"/><circle cx="26" cy="26" r="17" stroke="currentColor" strokeWidth="1.1"/><path d="M26 1v7M26 44v7M1 26h7M44 26h7M8.3 8.3l5 5M38.7 38.7l5 5M43.7 8.3l-5 5M13.3 38.7l-5 5" stroke="currentColor" strokeWidth="1.1"/></svg>
+  return <svg className="sun-mark" viewBox="0 0 52 52" fill="none" aria-hidden="true"><path d="M12 29a14 14 0 0 1 28 0" stroke="currentColor" strokeWidth="1.8"/><path d="M5 29h42M12 37h28" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><path d="M26 5v4M9 12l3 3M43 12l-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+}
+
+function Brand() {
+  return <Link to="/" className="brand" aria-label="Solara Resort home"><SunMark /><span><strong>SOLARA</strong><small>RESORT</small></span></Link>
 }
 
 function Header() {
@@ -50,7 +54,7 @@ function Header() {
 
   return <header className={`site-header ${pathname === '/' ? 'site-header-home' : ''}`}>
     <div className="header-inner content-width">
-      <Link to="/" className="brand" aria-label="Solara Resort home"><SunMark /><span><strong>SOLARA</strong><small>RESORT</small></span></Link>
+      <Brand />
       <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="primary-navigation" onClick={() => setMenuOpen(!menuOpen)}><span/><span/></button>
       <nav id="primary-navigation" className={menuOpen ? 'nav-open' : ''} aria-label="Primary navigation">
         <NavLink to="/stays">Stays</NavLink>
@@ -66,7 +70,7 @@ function Footer() {
   return <footer className="site-footer">
     <div className="content-width footer-top">
       <div><span className="eyebrow light-label">THE GOOD KIND OF GETAWAY</span><h2>Stay a little<br/><em>longer.</em></h2><ButtonLink to="/contact" light>Plan your stay</ButtonLink></div>
-      <div className="footer-links"><div><span className="eyebrow light-label">EXPLORE</span><Link to="/stays">Stays</Link><Link to="/experiences">Experiences</Link><Link to="/about">Our story</Link><Link to="/contact">Contact</Link></div><div><span className="eyebrow light-label">SOLARA RESORT</span><p>A fictional tropical escape,<br/>created to inspire the art<br/>of slowing down.</p></div></div>
+      <div className="footer-links"><div><span className="eyebrow light-label">EXPLORE</span><Link to="/stays">Stays</Link><Link to="/experiences">Experiences</Link><Link to="/about">Our story</Link><Link to="/contact">Contact</Link></div><div><Brand /><p>A fictional tropical escape,<br/>created to inspire the art<br/>of slowing down.</p></div></div>
     </div>
     <div className="content-width footer-bottom"><span>© {new Date().getFullYear()} Solara Resort</span><span>Concept resort · Images are illustrative</span><Link to="/">Back to top ↑</Link></div>
   </footer>
@@ -75,16 +79,30 @@ function Footer() {
 function SiteMotion() {
   const { pathname } = useLocation()
   useEffect(() => {
-    window.scrollTo(0, 0)
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
     document.title = `${document.querySelector('main')?.dataset.title || 'Solara Resort'} — Solara Resort`
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const context = gsap.context(() => {
-      gsap.from('[data-hero-reveal]', { y: 35, opacity: 0, duration: 1, ease: 'power2.out', stagger: 0.12, delay: 0.14 })
+    const media = gsap.matchMedia()
+    media.add('(prefers-reduced-motion: no-preference)', () => {
+      gsap.from('[data-hero-reveal]:not(.page-intro-image):not(.contact-top-image)', { y: 32, opacity: 0, duration: 1.1, ease: 'power3.out', stagger: 0.14, delay: 0.12, clearProps: 'transform,opacity' })
+      gsap.from('.page-intro-image, .contact-top-image', { clipPath: 'inset(0 0 100% 0)', duration: 1.2, ease: 'power3.inOut', clearProps: 'clipPath' })
       gsap.utils.toArray('[data-reveal]').forEach((element) => {
-        gsap.from(element, { y: 34, opacity: 0, duration: 0.85, ease: 'power2.out', scrollTrigger: { trigger: element, start: 'top 88%', once: true } })
+        const timeline = gsap.timeline({ scrollTrigger: { trigger: element, start: 'top 90%', once: true } })
+        if (element.matches('.stay-row')) {
+          timeline.from(element.querySelector('.stay-row-image'), { clipPath: 'inset(0 0 100% 0)', duration: 1.2, ease: 'power3.inOut', clearProps: 'clipPath' })
+            .from(element.querySelector('.stay-row-copy').children, { y: 24, opacity: 0, stagger: 0.1, duration: 0.9, ease: 'power3.out', clearProps: 'transform,opacity' }, 0.2)
+        } else {
+          timeline.from(element, { y: 28, opacity: 0, duration: 0.95, ease: 'power3.out', clearProps: 'transform,opacity' })
+        }
+        // Populate and measure each timeline before another trigger can refresh it.
+        timeline.scrollTrigger.refresh()
       })
     })
-    return () => { context.revert(); ScrollTrigger.getAll().forEach(trigger => trigger.kill()) }
+    media.add('(min-width: 901px) and (prefers-reduced-motion: no-preference)', () => {
+      gsap.utils.toArray('.home-hero-image, .experience-banner > img, .about-image > img').forEach((image) => {
+        gsap.fromTo(image, { yPercent: -4, scale: 1.12 }, { yPercent: 4, scale: 1.12, ease: 'none', scrollTrigger: { trigger: image.parentElement, start: 'top bottom', end: 'bottom top', scrub: 0.6 } })
+      })
+    })
+    return () => media.revert()
   }, [pathname])
   return null
 }

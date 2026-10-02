@@ -40,11 +40,12 @@ a:hover .arrow, button:hover .arrow { transform: translate(3px, -3px); }
 .site-header { height: 92px; position: relative; z-index: 30; background: #15372f; color: #fff; }
 .site-header-home { position: absolute; top: 0; left: 0; width: 100%; background: linear-gradient(to bottom, rgba(10, 31, 29, .58), transparent); }
 .header-inner { display: flex; height: 100%; align-items: center; justify-content: space-between; gap: 2rem; }
-.brand { display: inline-flex; align-items: center; gap: .9rem; flex-shrink: 0; }
-.sun-mark { width: 40px; height: 40px; }
+.brand { display: inline-flex; align-items: center; gap: .85rem; flex-shrink: 0; color: #f6f3eb; }
+.sun-mark { width: 48px; height: 48px; flex-shrink: 0; }
+.brand .sun-mark { color: #ded1bb; }
 .brand strong, .brand small { display: block; line-height: 1; text-align: center; }
-.brand strong { font-family: "Playfair Display", Georgia, serif; font-size: 1.6rem; font-weight: 400; letter-spacing: .17em; }
-.brand small { margin-top: .48rem; font-size: .48rem; font-weight: 600; letter-spacing: .56em; }
+.brand strong { font-family: "Playfair Display", Georgia, serif; font-size: 1.7rem; font-weight: 400; letter-spacing: .23em; margin-right: -.23em; }
+.brand small { margin-top: .6rem; font-size: .48rem; font-weight: 500; letter-spacing: .65em; margin-right: -.65em; color: #ded1bb; }
 .site-header nav { display: flex; align-items: center; gap: clamp(1.3rem, 3vw, 3rem); }
 .site-header nav a { font-size: .67rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; transition: opacity .2s; }
 .site-header nav a:hover { opacity: .65; }
@@ -132,7 +133,9 @@ a:hover .arrow, button:hover .arrow { transform: translate(3px, -3px); }
 /* Stays */
 .stay-list { display: grid; gap: 9rem; }
 .stay-row { display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: clamp(3rem, 8vw, 9rem); }
+.stay-row-reverse { grid-template-columns: .9fr 1.1fr; }
 .stay-row-reverse .stay-row-image { order: 2; }
+.stay-row-image { overflow: hidden; }
 .stay-row-image img { aspect-ratio: 1.16; object-fit: cover; }
 .stay-row-copy { max-width: 430px; }
 .stay-row-copy h3 { margin: 1.1rem 0 1.5rem; font-size: clamp(3.1rem, 4.5vw, 5.3rem); line-height: 1.08; letter-spacing: -.04em; }
@@ -321,10 +324,29 @@ a:hover .arrow, button:hover .arrow { transform: translate(3px, -3px); }
   .form-row { grid-template-columns: 1fr; gap: 0; }
   .form-row .picker-field:last-child .picker-panel { right: auto; left: 0; }
   .inquiry-form { margin: 0 -1.5rem; padding: 2rem 1.5rem; }
-  .footer-links { width: 100%; justify-content: space-between; gap: 1rem; }
+  .footer-links { width: 100%; flex-wrap: wrap; justify-content: space-between; gap: 2rem 1rem; }
+}
+
+/* Small details, with the same feedback for keyboard navigation. */
+.text-link { position: relative; }
+.text-link::after { content: ''; position: absolute; right: 0; bottom: -1px; left: 0; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .45s ease; }
+.text-link:is(:hover, :focus-visible)::after { transform: scaleX(1); }
+.button:focus-visible { background: #29594c; border-color: #29594c; }
+.button-light:focus-visible { background: #e3d7c3; border-color: #e3d7c3; }
+a:focus-visible .arrow, button:focus-visible .arrow { transform: translate(3px, -3px); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .button { transition: background .35s, color .35s, border-color .35s, transform .35s; }
+  .button:is(:hover, :focus-visible) { transform: translateY(-2px); }
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .stay-row-image img { transition: transform 1.2s cubic-bezier(.2,.65,.3,1); }
+  .stay-row-image:hover img { transform: scale(1.035); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  a:is(:hover, :focus-visible) .arrow, button:is(:hover, :focus-visible) .arrow { transform: none; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
