@@ -1,17 +1,19 @@
 // Run against npm run dev with an existing Puppeteer module and Chromium browser:
-// node scripts/check-ui.mjs <path-to-puppeteer-core.js> <path-to-browser.exe>
+// node scripts/check-ui.mjs <path-to-puppeteer-core.js> <path-to-browser.exe> [base-url]
 import assert from 'node:assert/strict'
 import { pathToFileURL } from 'node:url'
 
 const { default: puppeteer } = await import(pathToFileURL(process.argv[2]).href)
+const baseUrl = process.argv[4] || 'http://127.0.0.1:5173'
 const browser = await puppeteer.launch({ executablePath: process.argv[3], headless: true })
 try {
   const page = await browser.newPage()
   const errors = []
   page.on('pageerror', error => errors.push(error.stack))
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
   const motion = value => page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value }])
   const visit = async path => {
-    await page.goto(`http://127.0.0.1:5173${path}`, { waitUntil: 'networkidle0' })
+    await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' })
     await page.evaluate(() => document.fonts.ready)
   }
   const visibleWithoutMotion = async () => {
@@ -26,7 +28,7 @@ try {
     await visit('/stays')
     const boxes = await page.$$eval('.stay-row-image img', images => images.map(image => {
       const { width, height, x, y } = image.getBoundingClientRect()
-      return { width, height, x, y, copyY: image.parentElement.nextElementSibling.getBoundingClientRect().y }
+      return { width, height, x, y, copyY: image.closest('.stay-row-image').nextElementSibling.getBoundingClientRect().y }
     }))
     assert.equal(boxes.length, 2)
     assert.ok(Math.abs(boxes[0].width - boxes[1].width) < 1, `Photo widths at ${width}`)
@@ -53,7 +55,7 @@ try {
   await motion('no-preference')
   await page.waitForFunction(() => getComputedStyle(document.querySelector('.home-hero-image')).transform !== 'none')
   assert.ok(await page.$eval('.home-hero-image', image => {
-    const frame = image.parentElement.getBoundingClientRect()
+    const frame = image.closest('.home-hero').getBoundingClientRect()
     const photo = image.getBoundingClientRect()
     return photo.top <= frame.top && photo.bottom >= frame.bottom && photo.left <= frame.left && photo.right >= frame.right
   }), 'Parallax covers its frame')
@@ -86,6 +88,13 @@ try {
   assert.equal(await page.evaluate(() => document.activeElement.id), 'arrival-picker')
   await page.setViewport({ width: 1440, height: 1000 })
   await visit('/stays')
+  if (await page.$('.consent-panel')) {
+    assert.equal(await page.$$eval('script[src*="googletagmanager.com"]', scripts => scripts.length), 0, 'Analytics is absent before consent')
+    await page.click('.consent-actions .button:not(.button-outline)')
+    await page.waitForSelector('script[src*="googletagmanager.com"]')
+    assert.equal(await page.evaluate(() => localStorage.getItem('solara_analytics_consent')), 'accepted')
+    assert.ok(await page.evaluate(() => window.dataLayer?.some(entry => entry[0] === 'event' && entry[1] === 'page_view')), 'Accepted analytics records a page view')
+  }
   await page.screenshot({ path: 'dist/stays-desktop.png', fullPage: true })
   assert.deepEqual(errors, [])
   console.log('PASS: layouts, live reduced motion, route changes, carousel, mobile menu, and form presence')
